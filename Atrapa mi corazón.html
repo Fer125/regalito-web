@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego del Gatito Corazón</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: pink;
+      font-family: Arial, sans-serif;
+    }
+
+    #pantalla-inicio {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    #pantalla-inicio button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #b3005a;
+      color: white;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #pantalla-inicio button:hover {
+      background: #ff4d94;
+    }
+
+    #juego-contenedor {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      background: #fff0f5;
+      border: 3px solid #b3005a;
+      border-radius: 10px;
+    }
+
+    #mensaje-amor {
+      display: none;
+      margin-top: 20px;
+      font-size: 22px;
+      color: #b3005a;
+      font-weight: bold;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    #botones {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    #botones button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #b3005a;
+      color: white;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #botones button:hover {
+      background: #ff4d94;
+    }
+  </style>
+</head>
+<body>
+  <div id="pantalla-inicio">
+    <h1> Atrapa mi corazón 💖</h1>
+    <p id="dedicatoria">Mi amor en este jueguito un tienes que agarrar un mi corazonctio, atrapalo mi amooooor :3</p>
+    <button onclick="iniciarJuego()">Comenzar</button>
+  </div>
+
+  <div id="juego-contenedor">
+    <canvas id="juego" width="600" height="400"></canvas>
+    <p id="mensaje-amor">Amoooooor atrapaste mi corazoncitoooo, es todo tuyo mi amor siempre será solo tuyo, amor soy solo tuyo tuyo tuyo, TE AMOOOOOOOOOOOO MUCHOOOOOOOOOOOOOO MI PRINCESAAAAAAAAAAAAAA HERMOSAAAAAAAAAAAAAAAAAAAAAAAA :3</p>
+    <div id="botones">
+      <button onclick="reiniciarJuego()">Otra vez</button>
+      <button onclick="window.location.href='index.html'">Volver al inicio</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("juego");
+    const ctx = canvas.getContext("2d");
+    const mensajeAmor = document.getElementById("mensaje-amor");
+    const botones = document.getElementById("botones");
+
+    let puntaje = 0;
+    let juegoActivo = false;
+    let x = Math.random() * (canvas.width - 60);
+    let y = Math.random() * (canvas.height - 60);
+    let velocidadX = 4;
+    let velocidadY = 4;
+    let atrapado = false;
+
+    const gatito = new Image();
+    gatito.src = "gatito.png";
+
+    function iniciarJuego() {
+      document.getElementById("pantalla-inicio").style.display = "none";
+      document.getElementById("juego-contenedor").style.display = "flex";
+      mensajeAmor.style.display = "none";
+      botones.style.display = "none";
+
+      puntaje = 0;
+      atrapado = false;
+      juegoActivo = true;
+      moverGatito();
+    }
+
+    function moverGatito() {
+      if (atrapado) {
+        mensajeAmor.style.display = "block";
+        botones.style.display = "flex";
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(gatito, x, y, 60, 60);
+
+      x += velocidadX;
+      y += velocidadY;
+
+      if (x <= 0 || x + 60 >= canvas.width) velocidadX *= -1;
+      if (y <= 0 || y + 60 >= canvas.height) velocidadY *= -1;
+
+      requestAnimationFrame(moverGatito);
+    }
+
+    canvas.addEventListener("click", (e) => {
+      if (atrapado) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      if (mouseX >= x && mouseX <= x + 60 && mouseY >= y && mouseY <= y + 60) {
+        atrapado = true;
+        mensajeAmor.style.display = "block";
+        botones.style.display = "flex";
+        terminarJuego();
+      }
+    });
+
+    function terminarJuego() {
+      juegoActivo = false;
+      document.getElementById("juego-contenedor").style.display = "flex";
+    }
+
+    function reiniciarJuego() {
+      puntaje = 0;
+      x = Math.random() * (canvas.width - 60);
+      y = Math.random() * (canvas.height - 60);
+      velocidadX = 4;
+      velocidadY = 4;
+      atrapado = false;
+      juegoActivo = true;
+      mensajeAmor.style.display = "none";
+      botones.style.display = "none";
+      moverGatito();
+    }
+
+    gatito.onload = () => {
+      moverGatito();
+    };
+  </script>
+</body>
+</html>
+
+
