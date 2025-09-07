@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Corazones</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: pink;
+      font-family: Arial, sans-serif;
+    }
+
+    #pantalla-inicio, #pantalla-final {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    #pantalla-inicio button, #pantalla-final button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #b3005a;
+      color: white;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #pantalla-inicio button:hover, #pantalla-final button:hover {
+      background: #ff4d94;
+    }
+
+    #pantalla-final h2 {
+      color: #b3005a;
+      margin-bottom: 20px;
+    }
+
+    #juego-contenedor {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #puntaje {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 20px;
+      color: #b3005a;
+    }
+
+    #tiempo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    canvas {
+      background: #fff0f5;
+      border: 3px solid #b3005a;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="pantalla-inicio" style="display: flex;">
+    <h1>Atrapa corazoncitos 💖</h1>
+    
+    <p id="dedicatoria">Mi princesa hermosaa, en este jueguito tienes que atrapar los corazones que puedes en 30 segundos asjdkads, suerte mi amooooooor :3 ✨</p>
+    <button onclick="iniciarJuego()">Comenzar</button>
+  </div>
+
+  
+  <div id="juego-contenedor">
+    <div id="puntaje">Puntaje: 0</div>
+    <div id="tiempo">Tiempo: 30</div>
+    <canvas id="juego" width="600" height="400"></canvas>
+  </div>
+
+  
+  <div id="pantalla-final">
+    <h2 id="mensaje-final"></h2>
+    <p id="resultado-final"></p>
+    <p id="mensaje-puntos"></p>
+    <button onclick="reiniciarJuego()">Volver a Jugar</button>
+    <button onclick="window.location.href='index.html'">Ir al Inicio</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("juego");
+    const ctx = canvas.getContext("2d");
+    let puntaje = 0;
+    let tiempo = 30;
+    let juegoActivo = false;
+    let intervaloTiempo;
+    const corazones = [];
+    let dedicatoria = "";
+
+    function iniciarJuego() {
+      dedicatoria = document.getElementById("dedicatoria").textContent;
+      document.getElementById("pantalla-inicio").style.display = "none";
+      document.getElementById("pantalla-final").style.display = "none";
+      document.getElementById("juego-contenedor").style.display = "flex";
+
+      puntaje = 0;
+      tiempo = 30;
+      juegoActivo = true;
+      document.getElementById("puntaje").textContent = "Puntaje: 0";
+      document.getElementById("tiempo").textContent = "Tiempo: 30";
+      corazones.length = 0;
+      actualizar();
+
+      setInterval(nuevoCorazon, 2000);
+
+      intervaloTiempo = setInterval(() => {
+        if (tiempo > 0) {
+          tiempo--;
+          document.getElementById("tiempo").textContent = "Tiempo: " + tiempo;
+        } else {
+          clearInterval(intervaloTiempo);
+          terminarJuego();
+        }
+      }, 1000);
+    }
+
+    function dibujarCorazon(x, y) {
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x, y - 10, x - 15, y - 10, x - 15, y);
+      ctx.bezierCurveTo(x - 15, y + 10, x, y + 20, x, y + 30);
+      ctx.bezierCurveTo(x, y + 20, x + 15, y + 10, x + 15, y);
+      ctx.bezierCurveTo(x + 15, y - 10, x, y - 10, x, y);
+      ctx.fill();
+    }
+
+    function nuevoCorazon() {
+      if (!juegoActivo) return;
+      const x = Math.random() * (canvas.width - 30) + 15;
+      const y = Math.random() * (canvas.height - 60) + 30;
+      corazones.push({ x, y, tiempo: Date.now() });
+    }
+
+    function actualizar() {
+      if (!juegoActivo) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = corazones.length - 1; i >= 0; i--) {
+        const c = corazones[i];
+        dibujarCorazon(c.x, c.y);
+
+        if (Date.now() - c.tiempo > 3000) {
+          corazones.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(actualizar);
+    }
+
+    canvas.addEventListener("click", (e) => {
+      if (!juegoActivo) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      for (let i = 0; i < corazones.length; i++) {
+        const c = corazones[i];
+        if (mouseX > c.x - 20 && mouseX < c.x + 20 && mouseY > c.y - 20 && mouseY < c.y + 30) {
+          corazones.splice(i, 1);
+          puntaje++;
+          document.getElementById("puntaje").textContent = "Puntaje: " + puntaje;
+          break;
+        }
+      }
+    });
+
+    function terminarJuego() {
+      juegoActivo = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById("juego-contenedor").style.display = "none";
+      document.getElementById("pantalla-final").style.display = "flex";
+
+      document.getElementById("mensaje-final").textContent = dedicatoria;
+      document.getElementById("resultado-final").textContent = "Tu puntaje final es: " + puntaje;
+
+      let mensaje;
+      if (puntaje < 5) {
+        mensaje = "Lo hiciste bien, mi vida 💌";
+      } else if (puntaje < 10) {
+        mensaje = "Lo hiciste muy bien, mi amoooooooor 🌸";
+      } else {
+        mensaje = "Felicidades mi bebeeeeeee, lo hiciste increíbleeeeeeee 💖";
+      }
+      document.getElementById("mensaje-puntos").textContent = mensaje;
+    }
+
+    function reiniciarJuego() {
+      clearInterval(intervaloTiempo);
+      iniciarJuego();
+    }
+  </script>
+</body>
+</html>
+
+
+
